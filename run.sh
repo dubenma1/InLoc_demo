@@ -9,6 +9,6 @@
 #SBATCH --mail-type=END,FAIL
 #SBATCH --time=1-00:00:00
 module load MATLAB/2018a
-module load glog/0.3.5-foss-2018b
 nvidia-smi
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/lucivpav/gflags-2.2.2/build/lib
 cat startup.m inloc_demo.m | matlab -nodesktop
