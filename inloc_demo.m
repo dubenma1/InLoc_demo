@@ -10,3 +10,6 @@ ht_top100_densePE_localization;
 
 %3. pose verification
 ht_top10_densePV_localization;
+
+%4. evaluate
+evaluate;
