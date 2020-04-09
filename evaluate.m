@@ -45,7 +45,6 @@ nQueries = size(query_imgnames_all,2);
 errors = struct();
 retrievedPoses = struct();
 for i=1:nQueries
-    %i = 278; % 41 % TODO: remove
     queryName = query_imgnames_all{i};
     queryImage = imread(fullfile(params.data.dir, params.data.q.dir, queryName));
     
@@ -77,10 +76,7 @@ for i=1:nQueries
         T2 = P2(1:3,4);
 
         P = P2*P1;
-        T = P2(:,4);
-        T = -inv(P(1:3,1:3))*P(1:3,4);
-        %T = P1(1:3,4) + P2(1:3,4);
-        %T = P(1:3,4);
+        T = -inv(P2(1:3,1:3))*P2(1:3,4);
         initialDirection = [-1.0; 0.0; 0.0];
         rFix = [0.0, 0.0, 0.0];
         Rfix = rotationMatrix(deg2rad(rFix), 'XYZ');
@@ -100,7 +96,7 @@ for i=1:nQueries
     referenceP = referenceP(1:3,1:4);
     referenceR = referenceP(1:3,1:3);
 
-    referenceT = -inv(referenceR)*referenceP(:,4);
+    referenceT = referenceP(1:3,4);
     initialDirection = [-1.0; 0.0; 0.0];
     rFix = [-90.0, 0.0, 0.0];
     Rfix = rotationMatrix(deg2rad(rFix), 'XYZ');
@@ -113,8 +109,7 @@ for i=1:nQueries
     errors(i).queryId = queryId;
     errors(i).translation = norm(T - referenceT);
     errors(i).orientation = atan2d(norm(cross(orientation,referenceOrientation)),dot(orientation,referenceOrientation));
-    fprintf('errors: t: %g, orient: %g\n', errors(i).translation, errors(i).orientation);
-    xxx = 42;
+    fprintf('query %s errors: t: %g, orient: %g\n', queryId, errors(i).translation, errors(i).orientation);
 end
 
 % errors
@@ -132,6 +127,7 @@ summaryFile = fopen(params.evaluation.summary.path, 'w');
 thresholds = [[0.25 10], [0.5 10], [1 10]];
 scores = zeros(1, size(thresholds,2)/2);
 fprintf(summaryFile, 'Conditions: ');
+nQueriesWithKnownReferencePoses = 0;
 for i=1:2:size(thresholds,2)
     if i > 1
         fprintf(summaryFile, ' / ');
@@ -140,12 +136,16 @@ for i=1:2:size(thresholds,2)
     
     count = 0;
     for j=1:size(errors,1)
+        if errors(j).translation == -1
+            continue
+        end
+        nQueriesWithKnownReferencePoses = nQueriesWithKnownReferencePoses + 1;
         if errors(j).translation < thresholds(i) && errors(j).orientation < thresholds(i+1)
             count = count + 1;
         end
     end
 
-    scores((i-1)/2+1) = count / size(errors,1) * 100;
+    scores((i-1)/2+1) = count / nQueriesWithKnownReferencePoses * 100;
 end
 fprintf(summaryFile, '\n');
 for i=1:size(scores,2)
