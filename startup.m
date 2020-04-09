@@ -8,6 +8,7 @@ addpath('functions/netvlad/');
 addpath('functions/inpaint_nans');
 addpath('functions/InLocCIIRC_utils/rotationMatrix');
 addpath('functions/InLocCIIRC_utils/alignments');
+addpath('functions/permn');
 
 env = environment();
 if strcmp(env, 'ciirc')
